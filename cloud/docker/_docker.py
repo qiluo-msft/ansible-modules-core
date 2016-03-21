@@ -1125,8 +1125,14 @@ class DockerManager(object):
         resource = '%s:%s' % (image, tag)
 
         for image in self.client.images(name=image):
-            if resource in image.get('RepoTags', []):
-                return image['RepoTags']
+            # If image is pulled by 'registry.domain:port/image@sha256:123456...'
+            # RepoTags will be None
+            repo_tags = image.get('RepoTags', None)
+            if repo_tags is not None and resource in repo_tags:
+                return repo_tags
+            repo_digests = image.get('RepoDigests', None)
+            if repo_digests is not None and resource in repo_digests:
+                return repo_digests
         return []
 
     def get_inspect_containers(self, containers):
