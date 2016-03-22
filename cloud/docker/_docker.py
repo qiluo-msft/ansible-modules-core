@@ -594,17 +594,21 @@ def get_split_image_tag(image):
         registry, resource = None, image
 
     # now we can determine if image has a tag or a digest
+    tag = "latest"
+    basename = image
     for s in ['@',':']:
         if s in resource:
-            resource, tag = resource.split(s, 1)
-            if registry:
-                resource = '/'.join((registry, resource))
+            basename, tag = resource.split(s, 1)
+            if tag == "":
+                tag = "latest"
             break
-    else:
-        tag = "latest"
-        resource = image
 
-    return resource, tag
+    if registry:
+        fullname = '/'.join((registry, basename))
+    else:
+        fullname = basename
+
+    return fullname, tag
 
 def normalize_image(image):
     """
@@ -1125,8 +1129,7 @@ class DockerManager(object):
         resource = '%s:%s' % (image, tag)
 
         for image in self.client.images(name=image):
-            # If image is pulled by 'registry.domain:port/image@sha256:123456...'
-            # RepoTags will be None
+            # If image is pulled by digest, RepoTags may be None
             repo_tags = image.get('RepoTags', None)
             if repo_tags is not None and resource in repo_tags:
                 return repo_tags
