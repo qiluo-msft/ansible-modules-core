@@ -595,12 +595,10 @@ def get_split_image_tag(image):
 
     # now we can determine if image has a tag or a digest
     tag = "latest"
-    basename = image
+    basename = resource
     for s in ['@',':']:
         if s in resource:
             basename, tag = resource.split(s, 1)
-            if tag == "":
-                tag = "latest"
             break
 
     if registry:
